@@ -2,6 +2,11 @@
 import numpy as np
 import isodate
 import copy
+import datetime
+
+def get_todays_date():
+	# YYYY-MM-DD
+	return datetime.datetime.now().strftime('%Y-%m-%d')
 
 def calculate_fp(player_stats):
 	FP_WEIGHTS = {
