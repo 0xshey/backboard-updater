@@ -52,11 +52,11 @@ def fetch_players_stats(game_ids, date=None):
 
 		# Add team id to players
 		for player in home_team_players_raw:
-			player['team'] = str(game['homeTeam']['teamId'])
+			player['teamId'] = str(game['homeTeam']['teamId'])
 			player['opposingTeam'] = game['awayTeam']['teamId']
 		
 		for player in away_team_players_raw:
-			player['team'] = str(game['awayTeam']['teamId'])
+			player['teamId'] = str(game['awayTeam']['teamId'])
 			player['opposingTeam'] = game['homeTeam']['teamId']
 
 		# Combine players from both teams
@@ -98,7 +98,7 @@ def fetch_players_stats(game_ids, date=None):
 		for player in players:
 			print('|', end='')
 			player['stillPlaying'] = still_playing
-			player['game'] = game_id
+			player['gameId'] = game_id
 
 			# If player doesnt have these columns, add them
 			for column in ['notPlayingReason', 'notPlayingDescription']:
