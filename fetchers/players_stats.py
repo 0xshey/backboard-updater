@@ -52,11 +52,11 @@ def fetch_players_stats(game_ids, date=None):
 
 		# Add team id to players
 		for player in home_team_players_raw:
-			player['team'] = game['homeTeam']['teamId']
+			player['team'] = str(game['homeTeam']['teamId'])
 			player['opposingTeam'] = game['awayTeam']['teamId']
 		
 		for player in away_team_players_raw:
-			player['team'] = game['awayTeam']['teamId']
+			player['team'] = str(game['awayTeam']['teamId'])
 			player['opposingTeam'] = game['homeTeam']['teamId']
 
 		# Combine players from both teams
