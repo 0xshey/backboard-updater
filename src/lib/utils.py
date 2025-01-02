@@ -1,7 +1,6 @@
 # _utils.py
 import numpy as np
 import isodate
-import copy
 import datetime
 
 def get_todays_date():
