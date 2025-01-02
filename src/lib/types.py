@@ -19,7 +19,6 @@ class Game(TypedDict):
 	livePeriod: int
 	liveClock: str
 	arena: str
-	nationalBroadcaster: str
 	homeTeamId: str
 	awayTeamId: str
 

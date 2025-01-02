@@ -1,4 +1,5 @@
 from lib.logger import logging
+from lib.supabase import supabase
 
 from app.fetchers import get_standings
 from app.parsers import parse_standings
@@ -21,7 +22,12 @@ def daily_update_standings():
 	logger.info(f"Found {len(standings)} standings rows")
 
 	# Upload data to supabase
-	# ...
+	if standings:
+		logger.info("Uploading standings...")
+		standings_upsert= supabase.table("Standings_new").upsert(standings).execute()
+		n_upserted = len(standings_upsert.model_dump()['data'])
+		logger.info(f"OK: upserted {n_upserted} standings rows")
+		
 
 def main():
 	daily_update_standings()
