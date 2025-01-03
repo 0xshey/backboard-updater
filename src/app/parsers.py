@@ -194,7 +194,7 @@ def parse_boxscore(boxscore_response):
 				twoPointersMade=player_statistics["twoPointersMade"],
 				twoPointersPercentage=player_statistics["twoPointersPercentage"],
 				firstName=player["firstName"],
-				familyName=player["familyName"]
+				lastName=player["familyName"]
 			)
 			game_players.append(game_player)
 
