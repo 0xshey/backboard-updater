@@ -24,7 +24,7 @@ def update_standings():
 	# Upload data to supabase
 	if standings:
 		logger.info("Uploading standings...")
-		standings_upsert= supabase.table("Standings_new").upsert(standings).execute()
+		standings_upsert= supabase.table("Standings").upsert(standings).execute()
 		n_upserted = len(standings_upsert.model_dump()['data'])
 		logger.info(f"OK: upserted {n_upserted} standings rows")
 		

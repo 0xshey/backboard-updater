@@ -39,19 +39,19 @@ def daily_update_games(date=get_todays_date()):
 			# Upload data to supabase
 			if game:
 				logger.debug("Uploading game...")
-				game_upsert= supabase.table("Games_new").upsert([game]).execute()
+				game_upsert= supabase.table("Games").upsert([game]).execute()
 				n_upserted = len(game_upsert.model_dump()['data'])
 				logger.debug(f"OK: upserted {n_upserted} game rows")
 			
 			if game_teams:
 				logger.debug("Uploading game_teams...")
-				game_teams_upsert= supabase.table("GameTeams_new").upsert(game_teams).execute()
+				game_teams_upsert= supabase.table("GameTeams").upsert(game_teams).execute()
 				n_upserted = len(game_teams_upsert.model_dump()['data'])
 				logger.debug(f"OK: upserted {n_upserted} game_teams rows")
 
 			if game_players:
 				logger.debug("Uploading game_players...")
-				game_players_upsert= supabase.table("GamePlayers_new").upsert(game_players).execute()
+				game_players_upsert= supabase.table("GamePlayers").upsert(game_players).execute()
 				n_upserted = len(game_players_upsert.model_dump()['data'])
 				logger.debug(f"OK: upserted {n_upserted} game_players rows")
 

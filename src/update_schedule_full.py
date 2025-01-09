@@ -59,12 +59,12 @@ def update_schedule():
 
 
 	logger.info("Uploading games...")
-	standings_upsert = supabase.table("Games_new").upsert(game_objs).execute()
+	standings_upsert = supabase.table("Games").upsert(game_objs).execute()
 	n_upserted = len(standings_upsert.model_dump()['data'])
 	logger.info(f"OK: upserted {n_upserted} games")
 
 	logger.info("Uploading game teams...")
-	standings_upsert = supabase.table("GameTeams_new").upsert(game_team_objs).execute()
+	standings_upsert = supabase.table("GameTeams").upsert(game_team_objs).execute()
 	n_upserted = len(standings_upsert.model_dump()['data'])
 	logger.info(f"OK: upserted {n_upserted} game teams")
 
