@@ -59,6 +59,7 @@ def update_averages_job():
 	return True
 
 def main():
+	print("Starting scheduler")
 	scheduler = BlockingScheduler()
 
 	# Schedule the standings update to run every hour
@@ -78,7 +79,6 @@ def main():
 		CronTrigger(minute="0", hour="1")
 	)
 
-	print("Scheduler started")
 	try:
 		scheduler.start()
 	except subprocess.CalledProcessError as e:
