@@ -3,11 +3,11 @@ import sys
 
 ch = logging.StreamHandler(sys.stdout)
 ch.setFormatter(
-	logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+	logging.Formatter('%(asctime)s:%(levelname)s - %(message)s')
 )
 
 logger = logging.getLogger("backboard-logger")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logger.addHandler(ch)
 logger.propagate = False
 

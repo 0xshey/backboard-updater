@@ -1,5 +1,83 @@
-from lib.types import Standing, Game, GameTeam, GamePlayer
+from lib.types import Standing, Game, GameTeam, GamePlayer, PlayerSeasonAverages
+from lib.utils import calculate_fp
 from typing import List
+
+def parse_player_averages(player_averages_response):
+	""" for: Player """
+	if not player_averages_response:
+		raise ValueError("Cannot parse player averages response: None")
+	
+	data = player_averages_response.get("LeagueDashPlayerStats", [])
+
+	players: List[PlayerSeasonAverages] = []
+	for row in data:
+		players.append(PlayerSeasonAverages(
+			playerId=str(row['PLAYER_ID']),
+			playerName=row['PLAYER_NAME'],
+			playerAge=int(row['AGE']),
+			teamId=str(row['TEAM_ID']),
+			teamTricode=row['TEAM_ABBREVIATION'],
+			gamesPlayed=int(row['GP']),
+			wins=int(row['W']),
+			losses=int(row['L']),
+			winPercentage=float(row['W_PCT']),
+			minutes=float(row['MIN']),
+			fieldGoalsMade=int(row['FGM']),
+			fieldGoalsAttempted=int(row['FGA']),
+			fieldGoalsPercentage=float(row['FG_PCT']),
+			threePointersMade=int(row['FG3M']),
+			threePointersAttempted=int(row['FG3A']),
+			threePointersPercentage=float(row['FG3_PCT']),
+			freeThrowsMade=int(row['FTM']),
+			freeThrowsAttempted=int(row['FTA']),
+			freeThrowsPercentage=float(row['FT_PCT']),
+			reboundsOffensive=int(row['OREB']),
+			reboundsDefensive=int(row['DREB']),
+			reboundsTotal=int(row['REB']),
+			assists=int(row['AST']),
+			turnovers=int(row['TOV']),
+			steals=int(row['STL']),
+			blocks=int(row['BLK']),
+			blocksReceived=int(row['BLKA']),
+			foulsPersonal=int(row['PF']),
+			foulsDrawn=int(row['PFD']),
+			points=int(row['PTS']),
+			plusMinusPoints=float(row['PLUS_MINUS']),
+			fantasyPoints=float(row['NBA_FANTASY_PTS']),
+			doubleDoubles=int(row['DD2']),
+			tripleDoubles=int(row['TD3']),
+			gamesPlayedRank=int(row['GP_RANK']),
+			winsRank=int(row['W_RANK']),
+			lossesRank=int(row['L_RANK']),
+			winPercentageRank=int(row['W_PCT_RANK']),
+			minutesRank=int(row['MIN_RANK']),
+			fieldGoalsMadeRank=int(row['FGM_RANK']),
+			fieldGoalsAttemptedRank=int(row['FGA_RANK']),
+			fieldGoalsPercentageRank=int(row['FG_PCT_RANK']),
+			threePointersMadeRank=int(row['FG3M_RANK']),
+			threePointersAttemptedRank=int(row['FG3A_RANK']),
+			threePointersPercentageRank=int(row['FG3_PCT_RANK']),
+			freeThrowsMadeRank=int(row['FTM_RANK']),
+			freeThrowsAttemptedRank=int(row['FTA_RANK']),
+			freeThrowsPercentageRank=int(row['FT_PCT_RANK']),
+			reboundsOffensiveRank=int(row['OREB_RANK']),
+			reboundsDefensiveRank=int(row['DREB_RANK']),
+			reboundsTotalRank=int(row['REB_RANK']),
+			assistsRank=int(row['AST_RANK']),
+			turnoversRank=int(row['TOV_RANK']),
+			stealsRank=int(row['STL_RANK']),
+			blocksRank=int(row['BLK_RANK']),
+			blocksReceivedRank=int(row['BLKA_RANK']),
+			foulsPersonalRank=int(row['PF_RANK']),
+			foulsDrawnRank=int(row['PFD_RANK']),
+			pointsRank=int(row['PTS_RANK']),
+			plusMinusPointsRank=int(row['PLUS_MINUS_RANK']),
+			fantasyPointsRank=int(row['NBA_FANTASY_PTS_RANK']),
+			doubleDoublesRank=int(row['DD2_RANK']),
+			tripleDoublesRank=int(row['TD3_RANK']),
+		))
+	
+	return players
 
 def parse_standings(standings_response):
 	""" for: Standing """
@@ -57,7 +135,8 @@ def parse_boxscore(boxscore_response):
 	game = Game(
 		gameId=boxscore_game['gameId'],
 		code=boxscore_game['gameCode'],
-		dateTimeUTC=boxscore_game['gameTimeUTC'],
+		# dateTimeUTC=boxscore_game['gameTimeUTC'],
+		# dateTimeET=boxscore_game['gameTimeEst'],
 		order=boxscore_game['gameStatus'],
 		statusCode=boxscore_game['gameStatus'],
 		statusText=boxscore_game['gameStatusText'],
@@ -131,7 +210,7 @@ def parse_boxscore(boxscore_response):
 			secondChancePointsAttempted=team_statistics['secondChancePointsAttempted'],
 			secondChancePointsMade=team_statistics['secondChancePointsMade'],
 			secondChancePointsPercentage=team_statistics['secondChancePointsPercentage'],
-			teamFieldGoalAttempts=team_statistics['teamFieldGoalAttempts'],
+			# teamFieldGoalAttempts=team_statistics['teamFieldGoalAttempts'],
 			threePointersAttempted=team_statistics['threePointersAttempted'],
 			threePointersMade=team_statistics['threePointersMade'],
 			threePointersPercentage=team_statistics['threePointersPercentage'],
@@ -194,7 +273,10 @@ def parse_boxscore(boxscore_response):
 				twoPointersMade=player_statistics["twoPointersMade"],
 				twoPointersPercentage=player_statistics["twoPointersPercentage"],
 				firstName=player["firstName"],
-				lastName=player["familyName"]
+				lastName=player["familyName"],
+
+				# calculated fields
+				fantasyPoints=calculate_fp(player_statistics),
 			)
 			game_players.append(game_player)
 

@@ -4,6 +4,7 @@ from lib.utils import get_todays_date
 
 from nba_api.stats.endpoints import leaguestandingsv3, scoreboardv2
 from nba_api.live.nba.endpoints import boxscore
+from nba_api.stats.endpoints import leaguedashplayerstats
 
 logger = logging.getLogger("backboard-logger")
 
@@ -24,7 +25,7 @@ def get_standings():
 	logger.debug("Making API request to nba_api...LeagueStandingsV3")
 	try:
 		response = leaguestandingsv3.LeagueStandingsV3().get_normalized_dict()
-		logger.debug("OK")
+		logger.info("OK")
 		return response
 
 	except Exception as e:
@@ -34,17 +35,30 @@ def get_standings():
 def get_boxscore(game_id):
 	""" for: Game, GamePlayer, GameTeam """
 	try:
+		logger.info(f"game: {game_id}")
 		logger.debug(f"Making API request to nba_api...BoxScore for: {game_id}")
 		response = boxscore.BoxScore(game_id=game_id).get_dict()
-		logger.debug("OK")
+		logger.info("OK")
 		return response
 
 	except JSONDecodeError:
-		logger.info("No data available yet")
+		logger.info("No data")
 		return None
 		
 	except Exception as e:
 		logger.error(f"BoxScore fetch FAILED: {e}")
+		return None
+
+def get_player_averages():
+	""" for: Player """
+	logger.debug("Making API request to nba_api...LeagueDashPlayerStats")
+	try:
+		response = leaguedashplayerstats.LeagueDashPlayerStats(per_mode_detailed="PerGame").get_normalized_dict()
+		logger.info("OK")
+		return response
+
+	except Exception as e:
+		logger.error(f"LeagueDashPlayerStats fetch FAILED: {e}")
 		return None
 
 # game_id extractor

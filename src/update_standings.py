@@ -6,7 +6,7 @@ from app.parsers import parse_standings
 
 logger = logging.getLogger("backboard-logger")
 
-def daily_update_standings():
+def update_standings():
 	logger.info("Starting daily update for standings")
 
 	# Fetch standings
@@ -30,7 +30,7 @@ def daily_update_standings():
 		
 
 def main():
-	daily_update_standings()
+	update_standings()
 
 if __name__ == "__main__":
 	main()

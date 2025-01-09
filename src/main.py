@@ -41,6 +41,23 @@ def update_games_job():
 
 	return True
 
+def update_averages_job():
+	command = ["python", "update_averages.py"]
+	try:
+		subprocess.run(
+			command,
+			cwd=os.path.join(CWD, "src"),
+			env=current_env,
+			text=True,
+			check=True
+		)
+
+	except subprocess.CalledProcessError as e:
+		print(f"Error: {e}")
+		return False
+
+	return True
+
 def main():
 	scheduler = BlockingScheduler()
 
@@ -53,7 +70,12 @@ def main():
 	# Schedule the games update to run every d`ay at 5AM
 	scheduler.add_job(
 		update_games_job,
-		CronTrigger(minute="*", hour="10-23")
+		CronTrigger(minute="*", hour="12-23")
+	)
+
+	scheduler.add_job(
+		update_averages_job,
+		CronTrigger(minute="0", hour="1")
 	)
 
 	print("Scheduler started")

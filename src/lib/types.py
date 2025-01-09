@@ -13,6 +13,7 @@ class Game(TypedDict):
 	gameId: str
 	code: str
 	dateTimeUTC: str
+	dateTimeET: str
 	order: int
 	statusCode: int
 	statusText: str
@@ -168,6 +169,69 @@ class GamePlayer(TypedDict):
 	twoPointersMade: int
 	twoPointersPercentage: float
 	
-
+class PlayerSeasonAverages(TypedDict):
+    playerId: str
+    playerName: str
+    playerAge: int
+    teamId: str
+    teamTricode: str
+    gamesPlayed: int
+    wins: int
+    losses: int
+    winPercentage: float
+    minutes: float
+    fieldGoalsMade: int
+    fieldGoalsAttempted: int
+    fieldGoalsPercentage: float
+    threePointersMade: int
+    threePointersAttempted: int
+    threePointersPercentage: float
+    freeThrowsMade: int
+    freeThrowsAttempted: int
+    freeThrowsPercentage: float
+    reboundsOffensive: int
+    reboundsDefensive: int
+    reboundsTotal: int
+    assists: int
+    turnovers: int
+    steals: int
+    blocks: int
+    blocksReceived: int
+    foulsPersonal: int
+    foulsDrawn: int
+    points: int
+    plusMinusPoints: float
+    fantasyPoints: float
+    doubleDoubles: int
+    tripleDoubles: int
+    gamesPlayedRank: int
+    winsRank: int
+    lossesRank: int
+    winPercentageRank: int
+    minutesRank: int
+    fieldGoalsMadeRank: int
+    fieldGoalsAttemptedRank: int
+    fieldGoalsPercentageRank: int
+    threePointersMadeRank: int
+    threePointersAttemptedRank: int
+    threePointersPercentageRank: int
+    freeThrowsMadeRank: int
+    freeThrowsAttemptedRank: int
+    freeThrowsPercentageRank: int
+    reboundsOffensiveRank: int
+    reboundsDefensiveRank: int
+    reboundsTotalRank: int
+    assistsRank: int
+    turnoversRank: int
+    stealsRank: int
+    blocksRank: int
+    blocksReceivedRank: int
+    foulsPersonalRank: int
+    foulsDrawnRank: int
+    pointsRank: int
+    plusMinusPointsRank: int
+    fantasyPointsRank: int
+    doubleDoublesRank: int
+    tripleDoublesRank: int
 
 	
