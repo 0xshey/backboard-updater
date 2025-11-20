@@ -1,6 +1,232 @@
-from lib.types import Standing, Game, GameTeam, GamePlayer, PlayerSeasonAverages
-from lib.utils import calculate_fp
+from lib.types import Game, GameTeam, GamePlayer
+from lib.utils import calculate_fp, parse_duration_to_seconds
 from typing import List
+
+def parse_boxscore(boxscore_response):
+	if not boxscore_response:
+		raise ValueError("Cannot parse boxscore response: None")
+
+	boxscore_game = boxscore_response.get("game", {})
+	boxscore_teams = [
+		boxscore_game.get("homeTeam"),
+		boxscore_game.get("awayTeam"),
+	]
+
+	game: Game
+	game_teams: List[GameTeam] = []
+	game_players: List[GamePlayer] = []
+
+	# game
+	game = Game(
+		id=boxscore_game["gameId"],
+		code=boxscore_game["gameCode"],
+		# datetime_et=boxscore_game["gameTimeEst"],
+		status_code=boxscore_game["gameStatus"],
+		status_text=boxscore_game["gameStatusText"],
+		datetime=boxscore_game["gameTimeUTC"],
+		# live_period=boxscore_game["period"],
+		# live_clock=boxscore_game["gameClock"],
+		# label=boxscore_game["gameLabel"],
+		# sublabel=boxscore_game["gameSubLabel"],
+		arena_name=boxscore_game["arena"]["arenaName"],
+		arena_state=boxscore_game["arena"]["arenaState"],
+		arena_city=boxscore_game["arena"]["arenaCity"],
+		# national_broadcaster=boxscore_game.get("nationalBroadcaster", ""),
+		team_home_id=str(boxscore_game["homeTeam"]["teamId"]),
+		team_away_id=str(boxscore_game["awayTeam"]["teamId"]),
+	)
+
+	# game teams
+	for team in boxscore_teams:
+		team_opp = next(t for t in boxscore_teams if t["teamId"] != team["teamId"])
+
+		team_statistics = team.get("statistics")
+		team_players = team.get("players", [])
+
+		game_team = GameTeam(
+			game_id=game["id"],
+			team_id=str(team["teamId"]),
+			team_opp_id=str(team_opp["teamId"]),
+			# created_at
+
+			seconds=parse_duration_to_seconds(team_statistics["minutes"]),
+			time_leading=parse_duration_to_seconds(team_statistics["timeLeading"]),
+			times_tied=int(team_statistics["timesTied"]),
+			
+			# Shooting splits
+			field_goals_attempted=team_statistics["fieldGoalsAttempted"],
+			field_goals_made=team_statistics["fieldGoalsMade"],
+			field_goals_percentage=team_statistics["fieldGoalsPercentage"],
+			three_pointers_attempted=team_statistics["threePointersAttempted"],
+			three_pointers_made=team_statistics["threePointersMade"],
+			three_pointers_percentage=team_statistics["threePointersPercentage"],
+			free_throws_attempted=team_statistics["freeThrowsAttempted"],
+			free_throws_made=team_statistics["freeThrowsMade"],
+			free_throws_percentage=team_statistics["freeThrowsPercentage"],
+			two_pointers_attempted=team_statistics["twoPointersAttempted"],
+			two_pointers_made=team_statistics["twoPointersMade"],
+			two_pointers_percentage=team_statistics["twoPointersPercentage"],
+
+			true_shooting_attempts=team_statistics.get("trueShootingAttempts"),
+			true_shooting_percentage=team_statistics.get("trueShootingPercentage"),
+
+			# Rebounding
+			rebounds_offensive=team_statistics["reboundsOffensive"],
+			rebounds_defensive=team_statistics["reboundsDefensive"],
+			rebounds_total=team_statistics["reboundsTotal"],
+			rebounds_team=team_statistics["reboundsTeam"],
+			rebounds_team_defensive=team_statistics["reboundsTeamDefensive"],
+			rebounds_team_offensive=team_statistics["reboundsTeamOffensive"],
+
+			# Fouls
+			fouls_personal=team_statistics["foulsPersonal"],
+			fouls_offensive=team_statistics["foulsOffensive"],
+			fouls_drawn=team_statistics["foulsDrawn"],
+			fouls_team=team_statistics["foulsTeam"],
+			fouls_technical=team_statistics["foulsTechnical"],
+			fouls_team_technical=team_statistics["foulsTeamTechnical"],
+
+			# Offense
+			points=team_statistics["points"],
+			points_fast_break=team_statistics["pointsFastBreak"],
+			points_fast_break_attempted=team_statistics.get("fastBreakPointsAttempted"),
+			points_fast_break_made=team_statistics.get("fastBreakPointsMade"),
+			points_fast_break_percentage=team_statistics.get("fastBreakPointsPercentage"),
+			points_from_turnovers=team_statistics["pointsFromTurnovers"],
+			points_in_the_paint=team_statistics["pointsInThePaint"],
+			points_in_the_paint_attempted=team_statistics.get("pointsInThePaintAttempted"),
+			points_in_the_paint_made=team_statistics.get("pointsInThePaintMade"),
+			points_in_the_paint_percentage=team_statistics.get("pointsInThePaintPercentage"),
+			points_second_chance=team_statistics["pointsSecondChance"],
+			points_second_chance_attempted=team_statistics.get("secondChancePointsAttempted"),
+			points_second_chance_made=team_statistics.get("secondChancePointsMade"),
+			points_second_chance_percentage=team_statistics.get("secondChancePointsPercentage"),
+			team_field_goals_attempted=team_statistics["teamFieldGoalAttempts"],
+			bench_points=team_statistics["benchPoints"],
+			biggest_lead=team_statistics.get("biggestLead", 0),
+			biggest_scoring_run=team_statistics.get("biggestScoringRun", 0),
+			assists=team_statistics["assists"],
+
+			# Defense
+			steals=team_statistics["steals"],
+			blocks=team_statistics["blocks"],
+			points_against=team_statistics["pointsAgainst"],
+			turnovers=team_statistics["turnovers"],
+			turnovers_team=team_statistics["turnoversTeam"],
+			turnovers_total=team_statistics.get("turnoversTotal"),
+			assist_turnover_ratio=team_statistics.get("assistTurnoverRatio"),
+
+			# Other
+			plus_minus=team_statistics["points"] - team_statistics["pointsAgainst"],
+			
+		)
+		game_teams.append(game_team)
+
+		# players
+		for player in team_players:
+			player_statistics = player.get("statistics")
+
+			game_player = GamePlayer(
+				game_id=str(game["id"]),
+				player_id=str(player["personId"]),
+				team_id=str(team["teamId"]),
+				team_opp_id=str(team_opp["teamId"]),
+
+				# Schema: status
+				status=player["status"],
+
+				# Schema: starter, played, still_playing
+				starter=bool(int(player["starter"])),
+				played=bool(int(player["played"])),
+				still_playing=player.get("stillPlaying"),  # unsure: comment if not provided
+				on_court=bool(int(player["oncourt"])),
+
+				# Schema: not_playing_reason, not_playing_description
+				not_playing_reason=player.get("notPlayingReason"),
+				not_playing_description=player.get("notPlayingDescription"),
+
+				# Schema: first_name, last_name
+				first_name=player["firstName"],
+				last_name=player["familyName"],
+
+				# Schema: jersey_number
+				jersey_number=player.get("jerseyNum"),
+
+				# Schema: starting_position
+				starting_position=player.get("position", ""),
+
+				# Schema: assists, blocks, blocks_received
+				assists=player_statistics["assists"],
+				blocks=player_statistics["blocks"],
+				blocks_received=player_statistics.get("blocksReceived"),
+
+				# Schema: field_goals_*
+				field_goals_attempted=player_statistics["fieldGoalsAttempted"],
+				field_goals_made=player_statistics["fieldGoalsMade"],
+				field_goals_percentage=player_statistics["fieldGoalsPercentage"],
+
+				# Schema: fouls_*
+				fouls_offensive=player_statistics.get("foulsOffensive"),
+				fouls_drawn=player_statistics.get("foulsDrawn"),
+				fouls_personal=player_statistics["foulsPersonal"],
+				fouls_technical=player_statistics.get("foulsTechnical"),
+
+				# Schema: free_throws_*
+				free_throws_attempted=player_statistics["freeThrowsAttempted"],
+				free_throws_made=player_statistics["freeThrowsMade"],
+				free_throws_percentage=player_statistics["freeThrowsPercentage"],
+
+				# Schema: minus, plus, plus_minus
+				minus=int(player_statistics["minus"]),
+				plus=int(player_statistics["plus"]),
+				plus_minus=int(player_statistics.get("plusMinusPoints")),
+
+				# Schema: seconds (your source uses "minutes" – converted)
+				seconds=parse_duration_to_seconds(player_statistics["minutes"]),
+
+				# Schema: points
+				points=player_statistics["points"],
+				points_fast_break=player_statistics.get("pointsFastBreak"),
+				points_in_the_paint=player_statistics["pointsInThePaint"],
+				points_second_chance=player_statistics["pointsSecondChance"],
+
+				# Schema: rebounds_*
+				rebounds_defensive=player_statistics["reboundsDefensive"],
+				rebounds_offensive=player_statistics["reboundsOffensive"],
+				rebounds_total=player_statistics["reboundsTotal"],
+
+				# Schema: steals
+				steals=player_statistics["steals"],
+
+				# Schema: three_pointers_*
+				three_pointers_attempted=player_statistics["threePointersAttempted"],
+				three_pointers_made=player_statistics["threePointersMade"],
+				three_pointers_percentage=player_statistics["threePointersPercentage"],
+
+				# Schema: turnovers
+				turnovers=player_statistics["turnovers"],
+
+				# Schema: two_pointers_*
+				two_pointers_attempted=player_statistics["twoPointersAttempted"],
+				two_pointers_made=player_statistics["twoPointersMade"],
+				two_pointers_percentage=player_statistics["twoPointersPercentage"],
+
+				# Schema: fp
+				fp=calculate_fp(player_statistics),
+
+				# Fields in your original mapping but NOT in schema:
+				# order=player["order"],                     # not in schema
+				# jersey_num=player["jerseyNum"],            # replaced with jersey_number
+				# fantasy_points=calculate_fp(player_stats), # replaced with fp
+			)
+
+			game_players.append(game_player)
+
+	return game, game_teams, game_players
+
+
+
+# ----- LEGACY METHODS -----
 
 def parse_player_averages(player_averages_response):
 	""" for: Player """
@@ -9,7 +235,8 @@ def parse_player_averages(player_averages_response):
 	
 	data = player_averages_response.get("LeagueDashPlayerStats", [])
 
-	players: List[PlayerSeasonAverages] = []
+	# players: List[PlayerSeasonAverages] = []
+	players = []
 	for row in data:
 		players.append(PlayerSeasonAverages(
 			playerId=str(row['PLAYER_ID']),
@@ -84,7 +311,8 @@ def parse_standings(standings_response):
 	if not standings_response:
 		raise ValueError("Cannot parse staning response: None")
 	
-	standings: List[Standing] = []
+	# standings: List[Standing] = []
+	standings = []
 	for row in standings_response.get("Standings", []):
 		standing = Standing(
 			teamId=str(row["TeamID"]),
@@ -117,168 +345,3 @@ def parse_standings(standings_response):
 		standings.append(standing)
 	return standings
 
-def parse_boxscore(boxscore_response):
-	if not boxscore_response:
-		raise ValueError("Cannot parse boxscore response: None")
-
-	boxscore_game = boxscore_response.get('game', {})
-	boxscore_teams = [
-		boxscore_game.get('homeTeam'),
-		boxscore_game.get('awayTeam'),
-	]
-
-	game: Game
-	game_teams: List[GameTeam] = []
-	game_players: List[GamePlayer] = []
-
-	# game
-	game = Game(
-		gameId=boxscore_game['gameId'],
-		code=boxscore_game['gameCode'],
-		# dateTimeUTC=boxscore_game['gameTimeUTC'],
-		# dateTimeET=boxscore_game['gameTimeEst'],
-		order=boxscore_game['gameStatus'],
-		statusCode=boxscore_game['gameStatus'],
-		statusText=boxscore_game['gameStatusText'],
-		livePeriod=boxscore_game['period'],
-		liveClock=boxscore_game['gameClock'],
-		arena=boxscore_game['arena']['arenaName'],
-		nationalBroadcaster=boxscore_game.get('nationalBroadcaster', ''),
-		homeTeamId=str(boxscore_game['homeTeam']['teamId']),
-		awayTeamId=str(boxscore_game['awayTeam']['teamId']),
-	)
-
-	# game teams
-	for team in boxscore_teams:
-		team_statistics = team.get('statistics')
-		team_players = team.get('players', [])
-		game_team = GameTeam(
-			gameId=game['gameId'],
-			teamId=str(team['teamId']),
-			teamName=team['teamName'],
-			teamCity=team['teamCity'],
-			teamTricode=team['teamTricode'],
-			score=team['score'],
-			inBonus=team['inBonus'],
-			timeoutsRemaining=team['timeoutsRemaining'],
-			periods=team['periods'],
-			points=team_statistics['points'],
-			assists=team_statistics['assists'],
-			reboundsTotal=team_statistics['reboundsTotal'],
-			steals=team_statistics['steals'],
-			turnovers=team_statistics['turnovers'],
-			blocks=team_statistics['blocks'],
-			assistsTurnoverRatio=team_statistics['assistsTurnoverRatio'],
-			benchPoints=team_statistics['benchPoints'],
-			biggestLead=team_statistics.get('biggestLead', 0),
-			biggestLeadScore=team_statistics.get('biggestLeadScore', ''),
-			biggestScoringRun=team_statistics.get('biggestScoringRun', 0),
-			biggestScoringRunScore=team_statistics.get('biggestScoringRunScore', ''),
-			blocksReceived=team_statistics['blocksReceived'],
-			fastBreakPointsAttempted=team_statistics['fastBreakPointsAttempted'],
-			fastBreakPointsMade=team_statistics['fastBreakPointsMade'],
-			fastBreakPointsPercentage=team_statistics['fastBreakPointsPercentage'],
-			fieldGoalsAttempted=team_statistics['fieldGoalsAttempted'],
-			fieldGoalsEffectiveAdjusted=team_statistics['fieldGoalsEffectiveAdjusted'],
-			fieldGoalsMade=team_statistics['fieldGoalsMade'],
-			fieldGoalsPercentage=team_statistics['fieldGoalsPercentage'],
-			foulsOffensive=team_statistics['foulsOffensive'],
-			foulsDrawn=team_statistics['foulsDrawn'],
-			foulsPersonal=team_statistics['foulsPersonal'],
-			foulsTeam=team_statistics['foulsTeam'],
-			foulsTechnical=team_statistics['foulsTechnical'],
-			foulsTeamTechnical=team_statistics['foulsTeamTechnical'],
-			freeThrowsAttempted=team_statistics['freeThrowsAttempted'],
-			freeThrowsMade=team_statistics['freeThrowsMade'],
-			freeThrowsPercentage=team_statistics['freeThrowsPercentage'],
-			leadChanges=team_statistics['leadChanges'],
-			minutes=team_statistics['minutes'],
-			pointsAgainst=team_statistics['pointsAgainst'],
-			pointsFastBreak=team_statistics['pointsFastBreak'],
-			pointsFromTurnovers=team_statistics['pointsFromTurnovers'],
-			pointsInThePaint=team_statistics['pointsInThePaint'],
-			pointsInThePaintAttempted=team_statistics['pointsInThePaintAttempted'],
-			pointsInThePaintMade=team_statistics['pointsInThePaintMade'],
-			pointsInThePaintPercentage=team_statistics['pointsInThePaintPercentage'],
-			pointsSecondChance=team_statistics['pointsSecondChance'],
-			reboundsDefensive=team_statistics['reboundsDefensive'],
-			reboundsOffensive=team_statistics['reboundsOffensive'],
-			reboundsPersonal=team_statistics['reboundsPersonal'],
-			reboundsTeam=team_statistics['reboundsTeam'],
-			reboundsTeamDefensive=team_statistics['reboundsTeamDefensive'],
-			reboundsTeamOffensive=team_statistics['reboundsTeamOffensive'],
-			secondChancePointsAttempted=team_statistics['secondChancePointsAttempted'],
-			secondChancePointsMade=team_statistics['secondChancePointsMade'],
-			secondChancePointsPercentage=team_statistics['secondChancePointsPercentage'],
-			# teamFieldGoalAttempts=team_statistics['teamFieldGoalAttempts'],
-			threePointersAttempted=team_statistics['threePointersAttempted'],
-			threePointersMade=team_statistics['threePointersMade'],
-			threePointersPercentage=team_statistics['threePointersPercentage'],
-			timeLeading=team_statistics['timeLeading'],
-			timesTied=team_statistics['timesTied'],
-			trueShootingAttempts=team_statistics['trueShootingAttempts'],
-			trueShootingPercentage=team_statistics['trueShootingPercentage'],
-			turnoversTeam=team_statistics['turnoversTeam'],
-			turnoversTotal=team_statistics['turnoversTotal'],
-			twoPointersAttempted=team_statistics['twoPointersAttempted'],
-			twoPointersMade=team_statistics['twoPointersMade'],
-			twoPointersPercentage=team_statistics['twoPointersPercentage'],
-		)
-		game_teams.append(game_team)
-
-		# players
-		for player in team_players:
-			player_statistics = player.get('statistics')
-			game_player = GamePlayer(
-				gameId=str(game["gameId"]),
-				playerId=str(player["personId"]),
-				teamId=str(team["teamId"]),
-				status=player["status"],
-				order=player["order"],
-				jerseyNum=player["jerseyNum"],
-				startingPosition=player.get("position", ""),
-				starter=bool(int(player["starter"])),
-				oncourt=bool(int(player["oncourt"])),
-				played=bool(int(player["played"])),
-				assists=player_statistics["assists"],
-				blocks=player_statistics["blocks"],
-				blocksReceived=player_statistics["blocksReceived"],
-				fieldGoalsAttempted=player_statistics["fieldGoalsAttempted"],
-				fieldGoalsMade=player_statistics["fieldGoalsMade"],
-				fieldGoalsPercentage=player_statistics["fieldGoalsPercentage"],
-				foulsOffensive=player_statistics["foulsOffensive"],
-				foulsDrawn=player_statistics["foulsDrawn"],
-				foulsPersonal=player_statistics["foulsPersonal"],
-				foulsTechnical=player_statistics["foulsTechnical"],
-				freeThrowsAttempted=player_statistics["freeThrowsAttempted"],
-				freeThrowsMade=player_statistics["freeThrowsMade"],
-				freeThrowsPercentage=player_statistics["freeThrowsPercentage"],
-				minus=player_statistics["minus"],
-				minutes=player_statistics["minutes"],
-				plus=player_statistics["plus"],
-				plusMinusPoints=player_statistics["plusMinusPoints"],
-				points=player_statistics["points"],
-				pointsFastBreak=player_statistics["pointsFastBreak"],
-				pointsInThePaint=player_statistics["pointsInThePaint"],
-				pointsSecondChance=player_statistics["pointsSecondChance"],
-				reboundsDefensive=player_statistics["reboundsDefensive"],
-				reboundsOffensive=player_statistics["reboundsOffensive"],
-				reboundsTotal=player_statistics["reboundsTotal"],
-				steals=player_statistics["steals"],
-				threePointersAttempted=player_statistics["threePointersAttempted"],
-				threePointersMade=player_statistics["threePointersMade"],
-				threePointersPercentage=player_statistics["threePointersPercentage"],
-				turnovers=player_statistics["turnovers"],
-				twoPointersAttempted=player_statistics["twoPointersAttempted"],
-				twoPointersMade=player_statistics["twoPointersMade"],
-				twoPointersPercentage=player_statistics["twoPointersPercentage"],
-				firstName=player["firstName"],
-				lastName=player["familyName"],
-
-				# calculated fields
-				fantasyPoints=calculate_fp(player_statistics),
-			)
-			game_players.append(game_player)
-
-	return game, game_teams, game_players
-	

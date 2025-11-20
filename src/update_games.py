@@ -39,19 +39,19 @@ def daily_update_games(date=get_todays_date()):
 			# Upload data to supabase
 			if game:
 				logger.debug("Uploading game...")
-				game_upsert= supabase.table("Games").upsert([game]).execute()
+				game_upsert= supabase.table("game").upsert([game]).execute()
 				n_upserted = len(game_upsert.model_dump()['data'])
 				logger.debug(f"OK: upserted {n_upserted} game rows")
 			
 			if game_teams:
 				logger.debug("Uploading game_teams...")
-				game_teams_upsert= supabase.table("GameTeams").upsert(game_teams).execute()
+				game_teams_upsert= supabase.table("game_team").upsert(game_teams).execute()
 				n_upserted = len(game_teams_upsert.model_dump()['data'])
 				logger.debug(f"OK: upserted {n_upserted} game_teams rows")
 
 			if game_players:
 				logger.debug("Uploading game_players...")
-				game_players_upsert= supabase.table("GamePlayers").upsert(game_players).execute()
+				game_players_upsert = supabase.table("game_player").upsert(game_players).execute()
 				n_upserted = len(game_players_upsert.model_dump()['data'])
 				logger.debug(f"OK: upserted {n_upserted} game_players rows")
 
@@ -61,7 +61,7 @@ def daily_update_games(date=get_todays_date()):
 
 
 def daily_update_games_all():
-	season_start = datetime.datetime.strptime("2024-10-22", "%Y-%m-%d")
+	season_start = datetime.datetime.strptime("2025-10-21", "%Y-%m-%d")
 	today = datetime.datetime.strptime(get_todays_date(), "%Y-%m-%d")
 
 	dates = [(season_start + datetime.timedelta(days=i)).strftime("%Y-%m-%d") for i in range((today - season_start).days + 1)]

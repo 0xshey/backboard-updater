@@ -9,22 +9,11 @@ def get_todays_date():
 
 def calculate_fp(player_stats):
 	FP_WEIGHTS = {
-		'PTS': 1,
 		'points': 1,
-
-		'REB': 1.2,
 		'reboundsTotal': 1.2,
-
-		'AST': 1.5,
 		'assists': 1.5,
-
-		'STL': 3,
 		'steals': 3,
-
-		'BLK': 3,
 		'blocks': 3,
-
-		'TOV': -1,
 		'turnovers': -1,
 	}
 
@@ -34,7 +23,6 @@ def calculate_fp(player_stats):
 	fp = round(fp, 2)
 	return fp
 
-
 def parse_iso_duration(iso_duration):
 	parsed_duration = isodate.parse_duration(iso_duration)
 	total_seconds = int(parsed_duration.total_seconds())
@@ -42,6 +30,12 @@ def parse_iso_duration(iso_duration):
 	seconds = total_seconds % 60
 
 	return minutes, seconds
+
+def parse_duration_to_seconds(iso_duration):
+	parsed_duration = isodate.parse_duration(iso_duration)
+	total_seconds = int(parsed_duration.total_seconds())
+	
+	return total_seconds
 
 def parse_iso_datetime(iso_datetime):
 	return isodate.parse_datetime(iso_datetime)
