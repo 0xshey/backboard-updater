@@ -9,3 +9,4 @@ logs/
 test.py
 
 Dockerfile
+bar.sh
