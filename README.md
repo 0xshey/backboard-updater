@@ -4,3 +4,4 @@
 - The fetchers have been reworked to be more modular and easier to maintain.
 
 # Running the Project
+Internal devs will have access to the Supabase to set up their own version of bar.sh (Build-And-Run.sh). This will setup the Docker container and run the project.
