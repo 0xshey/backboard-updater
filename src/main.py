@@ -62,11 +62,11 @@ def main():
 	print("Starting scheduler")
 	scheduler = BlockingScheduler()
 
-	# Schedule the standings update to run every hour
-	scheduler.add_job(
-		update_standings_job,
-		CronTrigger(minute="0", hour="*")
-	)
+	# # Schedule the standings update to run every hour
+	# scheduler.add_job(
+	# 	update_standings_job,
+	# 	CronTrigger(minute="0", hour="*")
+	# )
 
 	# Schedule the games update to run every d`ay at 5AM
 	scheduler.add_job(
@@ -74,10 +74,10 @@ def main():
 		CronTrigger(minute="*", hour="12-23")
 	)
 
-	scheduler.add_job(
-		update_averages_job,
-		CronTrigger(minute="0", hour="1")
-	)
+	# scheduler.add_job(
+	# 	update_averages_job,
+	# 	CronTrigger(minute="0", hour="1")
+	# )
 
 	try:
 		scheduler.start()

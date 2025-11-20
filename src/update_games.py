@@ -50,6 +50,27 @@ def daily_update_games(date=get_todays_date()):
 				logger.debug(f"OK: upserted {n_upserted} game_teams rows")
 
 			if game_players:
+				# Step A: Build player rows for missing players
+				players_to_upsert = []
+				for gp in game_players:
+					players_to_upsert.append({
+						"id": gp["player_id"],
+						"team_id": gp.get("team_id"),
+						"first_name": gp.get("first_name"),
+						"last_name": gp.get("last_name"),
+					})
+
+				if players_to_upsert:
+					logger.debug("Upserting players...")
+					players_upsert = (
+						supabase.table("player")
+						.upsert(players_to_upsert)
+						.execute()
+					)
+					n_upserted = len(players_upsert.model_dump().get('data', []))
+					logger.debug(f"OK: upserted {n_upserted} player rows")
+
+
 				logger.debug("Uploading game_players...")
 				game_players_upsert = supabase.table("game_player").upsert(game_players).execute()
 				n_upserted = len(game_players_upsert.model_dump()['data'])
