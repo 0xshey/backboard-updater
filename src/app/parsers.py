@@ -24,8 +24,8 @@ def parse_boxscore(boxscore_response):
 		status_code=boxscore_game["gameStatus"],
 		status_text=boxscore_game["gameStatusText"],
 		datetime=boxscore_game["gameTimeUTC"],
-		# live_period=boxscore_game["period"],
-		# live_clock=boxscore_game["gameClock"],
+		live_period=boxscore_game["period"],
+		live_clock=boxscore_game["gameClock"],
 		# label=boxscore_game["gameLabel"],
 		# sublabel=boxscore_game["gameSubLabel"],
 		arena_name=boxscore_game["arena"]["arenaName"],
@@ -34,6 +34,8 @@ def parse_boxscore(boxscore_response):
 		# national_broadcaster=boxscore_game.get("nationalBroadcaster", ""),
 		team_home_id=str(boxscore_game["homeTeam"]["teamId"]),
 		team_away_id=str(boxscore_game["awayTeam"]["teamId"]),
+		team_home_score=boxscore_game["homeTeam"]["score"],
+		team_away_score=boxscore_game["awayTeam"]["score"]
 	)
 
 	# game teams

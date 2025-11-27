@@ -2,6 +2,8 @@ import os
 import subprocess
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.blocking import BlockingScheduler
+import tzlocal
+
 
 CWD = os.path.join(os.getcwd())
 current_env = os.environ.copy()
@@ -60,6 +62,7 @@ def update_averages_job():
 
 def main():
 	print("Starting scheduler")
+	print("Server timezone:", tzlocal.get_localzone())
 	scheduler = BlockingScheduler()
 
 	# # Schedule the standings update to run every hour
@@ -71,7 +74,7 @@ def main():
 	# Schedule the games update to run every d`ay at 5AM
 	scheduler.add_job(
 		update_games_job,
-		CronTrigger(minute="*", hour="12-23")
+		CronTrigger(minute="*")
 	)
 
 	# scheduler.add_job(
