@@ -51,6 +51,30 @@ def get_game_ids(date=get_todays_date()):
 
 	return date_games
 
+def get_player_averages(season="2025-26"):
+	""" for: PlayerAverages """
+	logger.debug(f"Making API request to nba_api...LeagueDashPlayerStats for: {season}")
+	try:
+		response = leaguedashplayerstats.LeagueDashPlayerStats(season=season, per_mode_detailed="PerGame").get_normalized_dict()
+		logger.info("OK")
+		return response
+
+	except Exception as e:
+		logger.error(f"LeagueDashPlayerStats fetch FAILED: {e}")
+		return None
+
+def get_schedule():
+	""" for: Schedule """
+	from nba_api.stats.endpoints import scheduleleaguev2 # This import should ideally be at the top of the file.
+	logger.debug("Making API request to nba_api...ScheduleLeagueV2")
+	try:
+		response = scheduleleaguev2.ScheduleLeagueV2().get_normalized_dict()
+		logger.info("OK")
+		return response
+
+	except Exception as e:
+		logger.error(f"ScheduleLeagueV2 fetch FAILED: {e}")
+		return None
 
 
 
@@ -69,15 +93,5 @@ def get_standings():
 		logger.error(f"LeagueStandingsV3 fetch FAILED: {e}")
 		return None
 
-def get_player_averages():
-	""" for: Player """
-	logger.debug("Making API request to nba_api...LeagueDashPlayerStats")
-	try:
-		response = leaguedashplayerstats.LeagueDashPlayerStats(per_mode_detailed="PerGame").get_normalized_dict()
-		logger.info("OK")
-		return response
 
-	except Exception as e:
-		logger.error(f"LeagueDashPlayerStats fetch FAILED: {e}")
-		return None
 

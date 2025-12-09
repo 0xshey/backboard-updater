@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -9,7 +10,7 @@ CWD = os.path.join(os.getcwd())
 current_env = os.environ.copy()
 
 def update_standings_job():
-	command = ["python", "update_standings.py"]
+	command = [sys.executable, "update_standings.py"]
 	# command = ["pwd"]
 	try:
 		subprocess.run(
@@ -27,7 +28,7 @@ def update_standings_job():
 	return True
 
 def update_games_job():
-	command = ["python", "update_games.py"]
+	command = [sys.executable, "update_games.py"]
 	try:
 		subprocess.run(
 			command,
@@ -44,7 +45,7 @@ def update_games_job():
 	return True
 
 def update_averages_job():
-	command = ["python", "update_averages.py"]
+	command = [sys.executable, "update_averages.py"]
 	try:
 		subprocess.run(
 			command,
@@ -77,10 +78,10 @@ def main():
 		CronTrigger(minute="*")
 	)
 
-	# scheduler.add_job(
-	# 	update_averages_job,
-	# 	CronTrigger(minute="0", hour="1")
-	# )
+	scheduler.add_job(
+		update_averages_job,
+		CronTrigger(minute="0", hour="0,6,12,18")
+	)
 
 	try:
 		scheduler.start()

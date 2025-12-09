@@ -1,6 +1,7 @@
-from lib.types import Game, GameTeam, GamePlayer
+from lib.types import Game, GameTeam, GamePlayer, SeasonAverage
 from lib.utils import calculate_fp, parse_duration_to_seconds
 from typing import List
+
 
 def parse_boxscore(boxscore_response):
 	if not boxscore_response:
@@ -230,83 +231,81 @@ def parse_boxscore(boxscore_response):
 
 # ----- LEGACY METHODS -----
 
-def parse_player_averages(player_averages_response):
-	""" for: Player """
+def parse_player_averages(player_averages_response, season):
+	""" for: SeasonAverage """
 	if not player_averages_response:
 		raise ValueError("Cannot parse player averages response: None")
 	
 	data = player_averages_response.get("LeagueDashPlayerStats", [])
 
-	# players: List[PlayerSeasonAverages] = []
-	players = []
+	averages: List[SeasonAverage] = []
 	for row in data:
-		players.append(PlayerSeasonAverages(
-			playerId=str(row['PLAYER_ID']),
-			playerName=row['PLAYER_NAME'],
-			playerAge=int(row['AGE']),
-			teamId=str(row['TEAM_ID']),
-			teamTricode=row['TEAM_ABBREVIATION'],
-			gamesPlayed=int(row['GP']),
+		averages.append(SeasonAverage(
+			season=season,
+			player_id=str(row['PLAYER_ID']),
+			team_id=str(row['TEAM_ID']),
+			age=int(row['AGE']),
+			games_played=int(row['GP']),
 			wins=int(row['W']),
 			losses=int(row['L']),
-			winPercentage=float(row['W_PCT']),
-			minutes=float(row['MIN']),
-			fieldGoalsMade=float(row['FGM']),
-			fieldGoalsAttempted=float(row['FGA']),
-			fieldGoalsPercentage=float(row['FG_PCT']),
-			threePointersMade=float(row['FG3M']),
-			threePointersAttempted=float(row['FG3A']),
-			threePointersPercentage=float(row['FG3_PCT']),
-			freeThrowsMade=float(row['FTM']),
-			freeThrowsAttempted=float(row['FTA']),
-			freeThrowsPercentage=float(row['FT_PCT']),
-			reboundsOffensive=float(row['OREB']),
-			reboundsDefensive=float(row['DREB']),
-			reboundsTotal=float(row['REB']),
+			win_percentage=float(row['W_PCT']),
+			minutes_average=float(row['MIN']),
+			field_goals_made=float(row['FGM']),
+			field_goals_attempted=float(row['FGA']),
+			field_goals_percentage=float(row['FG_PCT']),
+			three_pointers_made=float(row['FG3M']),
+			three_pointers_attempted=float(row['FG3A']),
+			three_pointers_percentage=float(row['FG3_PCT']),
+			free_throws_made=float(row['FTM']),
+			free_throws_attempted=float(row['FTA']),
+			free_throws_percentage=float(row['FT_PCT']),
+			rebounds_offensive=float(row['OREB']),
+			rebounds_defensive=float(row['DREB']),
+			rebounds_total=float(row['REB']),
 			assists=float(row['AST']),
 			turnovers=float(row['TOV']),
 			steals=float(row['STL']),
 			blocks=float(row['BLK']),
-			blocksReceived=float(row['BLKA']),
-			foulsPersonal=float(row['PF']),
-			foulsDrawn=float(row['PFD']),
+			blocks_received=float(row['BLKA']),
+			fouls_personal=float(row['PF']),
+			fouls_drawn=float(row['PFD']),
 			points=float(row['PTS']),
-			plusMinusPoints=float(row['PLUS_MINUS']),
-			fantasyPoints=float(row['NBA_FANTASY_PTS']),
-			doubleDoubles=float(row['DD2']),
-			tripleDoubles=float(row['TD3']),
-			gamesPlayedRank=int(row['GP_RANK']),
-			winsRank=int(row['W_RANK']),
-			lossesRank=int(row['L_RANK']),
-			winPercentageRank=int(row['W_PCT_RANK']),
-			minutesRank=int(row['MIN_RANK']),
-			fieldGoalsMadeRank=int(row['FGM_RANK']),
-			fieldGoalsAttemptedRank=int(row['FGA_RANK']),
-			fieldGoalsPercentageRank=int(row['FG_PCT_RANK']),
-			threePointersMadeRank=int(row['FG3M_RANK']),
-			threePointersAttemptedRank=int(row['FG3A_RANK']),
-			threePointersPercentageRank=int(row['FG3_PCT_RANK']),
-			freeThrowsMadeRank=int(row['FTM_RANK']),
-			freeThrowsAttemptedRank=int(row['FTA_RANK']),
-			freeThrowsPercentageRank=int(row['FT_PCT_RANK']),
-			reboundsOffensiveRank=int(row['OREB_RANK']),
-			reboundsDefensiveRank=int(row['DREB_RANK']),
-			reboundsTotalRank=int(row['REB_RANK']),
-			assistsRank=int(row['AST_RANK']),
-			turnoversRank=int(row['TOV_RANK']),
-			stealsRank=int(row['STL_RANK']),
-			blocksRank=int(row['BLK_RANK']),
-			blocksReceivedRank=int(row['BLKA_RANK']),
-			foulsPersonalRank=int(row['PF_RANK']),
-			foulsDrawnRank=int(row['PFD_RANK']),
-			pointsRank=int(row['PTS_RANK']),
-			plusMinusPointsRank=int(row['PLUS_MINUS_RANK']),
-			fantasyPointsRank=int(row['NBA_FANTASY_PTS_RANK']),
-			doubleDoublesRank=int(row['DD2_RANK']),
-			tripleDoublesRank=int(row['TD3_RANK']),
+			plus_minus=float(row['PLUS_MINUS']),
+			nba_fantasy_points=float(row['NBA_FANTASY_PTS']),
+			double_doubles=int(row['DD2']),
+			triple_doubles=int(row['TD3']),
+
+			wins_rank=int(row['W_RANK']),
+			losses_rank=int(row['L_RANK']),
+			win_percentage_rank=int(row['W_PCT_RANK']),
+			minutes_average_rank=int(row['MIN_RANK']),
+			field_goals_made_rank=int(row['FGM_RANK']),
+			field_goals_attempted_rank=int(row['FGA_RANK']),
+			field_goals_percentage_rank=int(row['FG_PCT_RANK']),
+			three_pointers_made_rank=int(row['FG3M_RANK']),
+			three_pointers_attempted_rank=int(row['FG3A_RANK']),
+			three_pointers_percentage_rank=int(row['FG3_PCT_RANK']),
+			free_throws_made_rank=int(row['FTM_RANK']),
+			free_throws_attempted_rank=int(row['FTA_RANK']),
+			free_throws_percentage_rank=int(row['FT_PCT_RANK']),
+			rebounds_offensive_rank=int(row['OREB_RANK']),
+			rebounds_defensive_rank=int(row['DREB_RANK']),
+			rebounds_total_rank=int(row['REB_RANK']),
+			assists_rank=int(row['AST_RANK']),
+			turnovers_rank=int(row['TOV_RANK']),
+			steals_rank=int(row['STL_RANK']),
+			blocks_rank=int(row['BLK_RANK']),
+			blocks_received_rank=int(row['BLKA_RANK']),
+			fouls_personal_rank=int(row['PF_RANK']),
+			fouls_drawn_rank=int(row['PFD_RANK']),
+			points_rank=int(row['PTS_RANK']),
+			plus_minus_rank=int(row['PLUS_MINUS_RANK']),
+			nba_fantasy_points_rank=int(row['NBA_FANTASY_PTS_RANK']),
+			double_doubles_rank=int(row['DD2_RANK']),
+			triple_doubles_rank=int(row['TD3_RANK']),
 		))
 	
-	return players
+	return averages
 
 def parse_standings(standings_response):
 	""" for: Standing """

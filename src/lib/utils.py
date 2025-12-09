@@ -7,6 +7,25 @@ def get_todays_date():
 	# YYYY-MM-DD
 	return datetime.datetime.now().strftime('%Y-%m-%d')
 
+def get_current_season():
+	"""
+	Returns the current NBA season string (e.g., '2024-25').
+	If current month is >= 10 (October), it's the start of a new season (Year-Year+1).
+	Else, it's the end of the current season (Year-1-Year).
+	"""
+	now = datetime.datetime.now()
+	year = now.year
+	month = now.month
+
+	if month >= 10:
+		start_year = year
+		end_year = year + 1
+	else:
+		start_year = year - 1
+		end_year = year
+	
+	return f"{start_year}-{str(end_year)[2:]}"
+
 def calculate_fp(player_stats):
 	FP_WEIGHTS = {
 		'points': 1,
