@@ -68,7 +68,7 @@ def get_schedule():
 	from nba_api.stats.endpoints import scheduleleaguev2 # This import should ideally be at the top of the file.
 	logger.debug("Making API request to nba_api...ScheduleLeagueV2")
 	try:
-		response = scheduleleaguev2.ScheduleLeagueV2().get_normalized_dict()
+		response = scheduleleaguev2.ScheduleLeagueV2().get_dict()
 		logger.info("OK")
 		return response
 

@@ -306,6 +306,98 @@ def parse_player_averages(player_averages_response, season):
 		))
 	
 	return averages
+	
+def parse_schedule(schedule_response):
+	""" for: Game, GameTeam """
+	if not schedule_response:
+		raise ValueError("Cannot parse schedule response: None")
+
+	league_schedule = schedule_response.get('leagueSchedule', {})
+	game_dates = league_schedule.get('gameDates', [])
+
+	games_data: List[Game] = []
+	games_teams_data: List[GameTeam] = []
+
+	for game_date in game_dates:
+		for i, game in enumerate(game_date['games']):
+			
+			# Skip non-regular season games if needed, or handle them.
+			# The prompt didn't strictly say to filter, but the previous code did:
+			if game['gameLabel'] in ["Preseason", "All-Star Game"]:
+				continue
+
+			# Game object
+			# Mapping based on previous update_schedule_full.py and types.py
+			# Note: types.py has fields like 'week_nba', 'label', etc. 
+			# I will map what is available.
+			
+			game_obj = Game(
+				id=str(game['gameId']),
+				# created_at is strictly required by TypedDict but usually handled by DB default or current time? 
+				# In parsers.py generally we don't set created_at if it's not from source, 
+				# but TypedDict might complain if I try to instantiate it strictly.
+				# However, looking at parse_boxscore, it sets fields. 
+				# Wait, parse_boxscore sets:
+				# game = Game(id=..., ...)
+				# It does NOT set created_at. So it must be Optional in runtime or Supabase ignores it?
+				# Let's look at types.py again. Game(TypedDict) has created_at: str.
+				# But TypedDict doesn't enforce keys at runtime unless validated.
+				# I will follow parse_boxscore pattern and omit created_at if not derived.
+				
+				code=game['gameCode'],
+				datetime=game['gameDateTimeUTC'], # mapping to 'datetime'
+				# datetime_et=game['gameDateTimeEst'], # Not in Game TypedDict currently shown? 
+				# Let's check Game TypedDict in types.py... 
+				# Game has: id, created_at, status_code, status_text, datetime, week_nba, label, sublabel, arena_name, arena_state, arena_city, team_home_id, team_away_id, team_home_score, team_away_score.
+				
+				status_code=game['gameStatus'],
+				status_text=game['gameStatusText'],
+				week_nba=game['weekNumber'], # assuming this exists
+				label=game['gameLabel'],
+				sublabel=game['gameSubLabel'],
+				arena_name=game['arenaName'],
+				arena_state=game['arenaState'],
+				arena_city=game['arenaCity'],
+				team_home_id=str(game['homeTeam']['teamId']),
+				team_away_id=str(game['awayTeam']['teamId']),
+				team_home_score=game['homeTeam']['score'],
+				team_away_score=game['awayTeam']['score']
+			)
+			games_data.append(game_obj)
+
+			# GameTeam objects
+			for team_key in ['homeTeam', 'awayTeam']:
+				team_data = game[team_key]
+				# We need team_opp_id
+				opp_key = 'awayTeam' if team_key == 'homeTeam' else 'homeTeam'
+				opp_data = game[opp_key]
+
+				game_team_obj = GameTeam(
+					game_id=str(game['gameId']),
+					team_id=str(team_data['teamId']),
+					team_opp_id=str(opp_data['teamId']),
+					# Schema match...
+					# Update_schedule_full had: teamName, teamCity, teamTricode -> These are Team fields, not GameTeam fields in types.py?
+					# GameTeam in types.py has stats (field_goals_made, etc.)
+					# The schedule endpoint mainly gives scores.
+					# GameTeam has 'points' which can be 'score'.
+					points=team_data['score']
+				)
+				# Only append if we have meaningful data? 
+				# The schedule endpoint is sparse on stats. 
+				# But for future games, it might just be the matchup.
+				games_teams_data.append(game_team_obj)
+
+	# Deduplicate game_teams based on game_id and team_id
+	unique_game_teams = { (gt['game_id'], gt['team_id']): gt for gt in games_teams_data }
+	games_teams_data = list(unique_game_teams.values())
+	
+	# Also deduplicate games just in case
+	unique_games = { g['id']: g for g in games_data }
+	games_data = list(unique_games.values())
+
+	return games_data, games_teams_data
+
 
 def parse_standings(standings_response):
 	""" for: Standing """
