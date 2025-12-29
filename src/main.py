@@ -78,6 +78,23 @@ def update_schedule_job():
 
 	return True
 
+def update_consistency_job():
+	command = [sys.executable, "update_consistency.py"]
+	try:
+		subprocess.run(
+			command,
+			cwd=os.path.join(CWD, "src"),
+			env=current_env,
+			text=True,
+			check=True
+		)
+
+	except subprocess.CalledProcessError as e:
+		print(f"Error: {e}")
+		return False
+
+	return True
+
 def main():
 	print("Starting scheduler")
 	print("Server timezone:", tzlocal.get_localzone())
@@ -104,6 +121,12 @@ def main():
 	scheduler.add_job(
 		update_schedule_job,
 		CronTrigger(minute="0", hour="4")
+	)
+
+	# Schedule the consistency update to run every day at 4:15AM
+	scheduler.add_job(
+		update_consistency_job,
+		CronTrigger(minute="15", hour="4")
 	)
 
 	try:
